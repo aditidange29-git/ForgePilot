@@ -89,7 +89,15 @@ export class MessageService {
       timestamp: Date.now(),
     };
     this.state.addMessage(userMsg);
-    this.sendToWebview({ type: "MESSAGE_RECEIVED", payload: { ...userMsg } });
+    this.sendToWebview({
+      type: "MESSAGE_RECEIVED",
+      payload: {
+        messageId: userMsg.id,
+        role: userMsg.role,
+        content: userMsg.content,
+        timestamp: userMsg.timestamp,
+      },
+    });
 
     // Phase 1 placeholder — Phase 2 replaces this block with TrueForge call
     this.sendStatus("working");
@@ -103,7 +111,12 @@ export class MessageService {
       this.state.addMessage(assistantMsg);
       this.sendToWebview({
         type: "MESSAGE_RECEIVED",
-        payload: { ...assistantMsg },
+        payload: {
+          messageId: assistantMsg.id,
+          role: assistantMsg.role,
+          content: assistantMsg.content,
+          timestamp: assistantMsg.timestamp,
+        },
       });
       this.sendStatus("not-connected");
     }, 400);
