@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'none';
+             style-src {{CSP_SOURCE}} 'nonce-{{NONCE}}';
+             script-src 'nonce-{{NONCE}}';"
+  />
+  <link rel="stylesheet" href="{{STYLES_URI}}" nonce="{{NONCE}}" />
+  <title>ForgePilot</title>
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────────────── -->
+  <header class="fp-header">
+    <div class="fp-header__brand">
+      <span class="fp-header__icon" aria-hidden="true">⚙</span>
+      <span class="fp-header__name">ForgePilot</span>
+    </div>
+    <div class="fp-header__actions">
+      <button id="btn-new-chat" class="fp-btn fp-btn--icon" title="New Chat" aria-label="New Chat">
+        ＋
+      </button>
+      <span id="status-badge" class="fp-status fp-status--not-connected" aria-live="polite">
+        Not Connected
+      </span>
+    </div>
+  </header>
+
+  <!-- ── CONVERSATION ───────────────────────────────────────────── -->
+  <main id="conversation" class="fp-conversation" aria-label="Conversation" role="log" aria-live="polite">
+    <div id="empty-state" class="fp-empty-state">
+      <p class="fp-empty-state__title">ForgePilot</p>
+      <p class="fp-empty-state__sub">Ask anything about your code.</p>
+      <p class="fp-empty-state__note">⚠ Agent backend not connected — Phase 2 will enable AI execution.</p>
+    </div>
+  </main>
+
+  <!-- ── INLINE EDIT PANEL ──────────────────────────────────────── -->
+  <section id="inline-edit-panel" class="fp-inline-edit fp-hidden" aria-label="Inline Edit">
+    <div class="fp-inline-edit__header">
+      <span>Inline Edit</span>
+      <button id="btn-inline-cancel" class="fp-btn fp-btn--ghost" aria-label="Close Inline Edit">✕</button>
+    </div>
+    <div class="fp-inline-edit__code-ctx">
+      <span class="fp-label">Selected code</span>
+      <pre id="inline-code-preview" class="fp-code-preview">No code selected — select code in the editor first. (Phase 2)</pre>
+    </div>
+    <textarea
+      id="inline-instruction"
+      class="fp-textarea"
+      rows="3"
+      placeholder="Describe the edit you want…"
+      aria-label="Inline edit instruction"
+    ></textarea>
+    <p class="fp-inline-edit__notice">⚠ Code editing integration is not available in Phase 1.</p>
+    <div class="fp-inline-edit__actions">
+      <button id="btn-inline-submit" class="fp-btn fp-btn--primary" disabled>Apply Edit (Phase 2)</button>
+      <button id="btn-inline-cancel2" class="fp-btn fp-btn--ghost">Cancel</button>
+    </div>
+  </section>
+
+  <!-- ── COMPOSER ───────────────────────────────────────────────── -->
+  <footer class="fp-composer">
+    <div class="fp-composer__controls">
+      <label class="fp-toggle" title="Agent Mode: runs multi-step tasks autonomously (Phase 2)">
+        <input type="checkbox" id="agent-mode-toggle" aria-label="Agent Mode" />
+        <span class="fp-toggle__track"></span>
+        <span class="fp-toggle__label">Agent</span>
+      </label>
+      <button id="btn-inline-edit" class="fp-btn fp-btn--ghost fp-btn--small" title="Open Inline Edit panel">
+        ✏ Inline Edit
+      </button>
+    </div>
+    <div class="fp-composer__input-row">
+      <textarea
+        id="message-input"
+        class="fp-textarea fp-composer__textarea"
+        rows="1"
+        placeholder="Message ForgePilot…"
+        aria-label="Message input"
+      ></textarea>
+      <button id="btn-send" class="fp-btn fp-btn--send" aria-label="Send message" disabled>
+        ➤
+      </button>
+    </div>
+    <div class="fp-composer__footer">
+      <span id="mode-label" class="fp-footer-label">Mode: Chat</span>
+      <span class="fp-footer-label fp-footer-label--muted">Backend: Not Connected — AI unavailable (Phase 2)</span>
+    </div>
+  </footer>
+
+  <script nonce="{{NONCE}}" src="{{SCRIPT_URI}}"></script>
+</body>
+</html>
