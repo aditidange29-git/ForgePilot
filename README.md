@@ -1,23 +1,18 @@
 # ForgePilot — AI Engineering Teammate
 
-> Phase 1: VS Code Extension Foundation
+> Phase 2: TrueForge Agent Runtime Integration
 
-ForgePilot is a VS Code-native AI coding assistant. This repository contains the **Phase 1** foundation — the complete UI, activity bar, sidebar, chat interface, Agent Mode, Inline Edit, and Webview message bridge.
-
-**Phase 2** will wire the TrueForge agent runtime to the existing message contract.
-
----
+ForgePilot is a VS Code-native AI coding assistant connected to the official TrueForge agent runtime SDK. TrueForge runs the agent loop, manages sessions, and streams turn events; ForgePilot does not implement a separate agent loop.
 
 ## Requirements
 
 | Tool | Minimum version |
 |------|----------------|
-| Node.js | 20.x |
-| npm | 9.x |
-| VS Code | 1.85.0 |
+| Node.js (TrueForge server and development) | 22.14 or later |
+| TrueForge server Node.js | 22.14 or later |
+| npm | 9.x or later |
+| VS Code | 1.100.0 or later |
 | Git | any recent |
-
----
 
 ## Setup
 
@@ -28,121 +23,73 @@ npm install
 npm run compile
 ```
 
----
-
 ## Run in VS Code (F5)
 
 1. Open the `ForgePilot` folder in VS Code.
-2. Press **F5** → select **VS Code Extension Development Host**.
-3. The new VS Code window will have the ForgePilot icon in the Activity Bar.
-4. Click the icon to open the sidebar.
+2. Press **F5** and select **VS Code Extension Development Host**.
+3. Click the ForgePilot icon in the Activity Bar.
 
----
+## TrueForge connection
+
+1. Start TrueForge locally with `npx @truefoundry/trueforge@latest`. The default address is `http://localhost:8790`.
+2. Configure at least one model in the TrueForge server. ForgePilot selects from the models returned by the server; it does not assume a model name.
+3. Set `forgepilot.trueforge.baseUrl` in VS Code settings if the server is not using the default address.
+4. Run **ForgePilot: Connect to TrueForge**, or open the ForgePilot view. ForgePilot shows Ready only after the SDK successfully calls the server capabilities endpoint.
+5. If authentication is enabled, run **ForgePilot: Set TrueForge Access Token**. The token is stored in VS Code SecretStorage and is never sent to the Webview. Use **ForgePilot: Clear TrueForge Access Token** to remove it.
+
+## Chat modes and privacy
+
+- **Chat Mode** sends only the typed prompt and asks TrueForge for a direct answer.
+- **Agent Mode** sends a different system instruction asking for structured engineering analysis and actionable recommendations. This integration does not grant workspace editing or command execution, and the agent is instructed not to claim it performed either.
+- Ordinary chat never includes the current editor selection. **Inline Edit** sends only the selected code and its instruction as prompt context; it returns a proposed edit and does not change workspace files.
+- **Clear Chat** and **New Chat** both create and synchronize a fresh ForgePilot conversation ID, remove its old local session mapping, and create a fresh TrueForge session on the next message. The old server-side session is not deleted.
 
 ## Commands
 
 | Command | Action |
 |---------|--------|
 | `ForgePilot: Open` | Opens the sidebar |
-| `ForgePilot: New Chat` | Starts a new conversation |
-| `ForgePilot: Clear Chat` | Clears current messages |
+| `ForgePilot: New Chat` | Starts a new conversation and TrueForge session |
+| `ForgePilot: Clear Chat` | Starts a fresh conversation and TrueForge session |
+| `ForgePilot: Connect to TrueForge` | Checks or re-establishes the server connection |
+| `ForgePilot: Set TrueForge Access Token` | Securely stores an optional server token |
+| `ForgePilot: Clear TrueForge Access Token` | Removes the stored token |
 
----
-
-## Project Structure
+## Project structure
 
 ```
-ForgePilot/
-├── src/
-│   ├── extension.ts               Entry point
-│   ├── commands/
-│   │   ├── openForgePilot.ts
-│   │   ├── newChat.ts
-│   │   └── clearChat.ts
-│   ├── providers/
-│   │   └── ForgePilotViewProvider.ts   Webview provider
-│   ├── services/
-│   │   ├── StateService.ts        Conversation & status state
-│   │   └── MessageService.ts      Message routing & validation
-│   ├── types/
-│   │   └── messages.ts            Message contract (Phase 1 v1.0.0)
-│   └── webview/
-│       ├── index.html
-│       ├── styles.css
-│       └── script.js
-├── media/icons/forgepilot.svg
-├── package.json
-├── tsconfig.json
-└── CHANGELOG.md
+src/
+├── extension.ts
+├── commands/
+├── providers/ForgePilotViewProvider.ts
+├── services/
+│   ├── StateService.ts
+│   ├── MessageService.ts
+│   ├── TrueForgeClient.ts
+│   ├── TrueForgeSessionService.ts
+│   ├── StreamingService.ts
+│   ├── ConnectionService.ts
+│   ├── EditorSelectionService.ts
+│   └── PromptService.ts
+├── types/
+│   ├── messages.ts
+│   └── trueforge.ts
+└── webview/
+    ├── index.html
+    ├── styles.css
+    └── script.js
 ```
 
----
+## Runtime and sessions
 
-## Message Contract (for Phase 2)
+- The TrueForge SDK dependency is pinned to `0.185.0`; its package requires Node.js 22 or later. The extension is emitted as ESM to load the SDK's supported ESM entry point.
+- `engines.vscode` remains `^1.100.0` and `@types/vscode` is pinned to `1.100.0`. VS Code controls the extension-host Node.js version, so compatibility of every VS Code build at that minimum with the SDK's Node.js floor has not been verified.
+- Each workspace conversation reuses its TrueForge session for later turns. Session IDs and the current conversation ID are persisted through VS Code workspace state.
+- Assistant text streams through SDK `0.185.0` Server-Sent Events, using event metadata and event-delta helpers. Stop aborts the active SDK request and asks TrueForge to cancel the running turn.
+- Model-provider API keys belong in the TrueForge server, not ForgePilot settings, the Webview, or the repository.
 
-All communication between the Webview and the Extension Host is typed and documented in `src/types/messages.ts`.
+## Known limitations
 
-### Webview → Extension Host
-
-| Type | Payload |
-|------|---------|
-| `SEND_MESSAGE` | `{ message, conversationId, mode }` |
-| `NEW_CHAT` | — |
-| `CLEAR_CHAT` | — |
-| `CANCEL_REQUEST` | — |
-| `INLINE_EDIT_REQUEST` | `{ instruction, selectedCode? }` |
-| `AGENT_MODE_CHANGED` | `{ enabled }` |
-
-### Extension Host → Webview
-
-| Type | Payload |
-|------|---------|
-| `MESSAGE_RECEIVED` | `{ messageId, role, content, timestamp }` |
-| `STATUS_UPDATE` | `{ status }` |
-| `ERROR` | `{ message }` |
-| `CHAT_CLEARED` | `{ newConversationId }` |
-
-### Connection Status values
-
-`not-connected` · `connecting` · `ready` · `working` · `error`
-
----
-
-## Phase 2 Integration Notes
-
-To integrate TrueForge:
-
-1. In `MessageService.ts`, replace the `setTimeout` placeholder in `_handleSendMessage` with a TrueForge agent call.
-2. Call `this.sendStatus('connecting')` before the call and `'ready'`/`'error'` after.
-3. Never set status to `ready` unless the backend has actually confirmed a connection.
-4. Use `CANCEL_REQUEST` from the Webview to cancel in-flight requests.
-5. For streaming, call `this.sendToWebview({ type: 'MESSAGE_RECEIVED', ... })` per chunk.
-6. Populate `selectedCode` in `INLINE_EDIT_REQUEST` from the VS Code editor selection API.
-
----
-
-## Known Limitations (Phase 1)
-
-- AI responses are placeholder text only — no backend is connected.
-- `Inline Edit` panel accepts input but does not submit (disabled button).
-- Agent Mode toggle changes UI state only — no autonomous execution.
-- Status never reaches `ready` or `connecting` — always `not-connected`.
-- No automated UI tests (manual test checklist below).
-
----
-
-## Manual Test Checklist
-
-| Test | Expected |
-|------|----------|
-| Press F5, open sidebar | ForgePilot appears, status = Not Connected |
-| Send a message | User bubble appears, placeholder assistant reply appears |
-| Press Enter | Message sent |
-| Press Shift+Enter | New line inserted |
-| Send empty message | Nothing happens |
-| New Chat (button or command) | Conversation cleared |
-| Clear Chat (command) | Messages cleared |
-| Toggle Agent Mode | UI reflects ON/OFF, mode label changes |
-| Open Inline Edit | Panel opens |
-| Cancel Inline Edit | Panel closes |
-| Reopen sidebar | Extension stable, no errors in console |
+- Agent Mode provides structured planning and recommendations only; workspace file edits and command execution are not implemented.
+- Inline Edit returns a proposed change as chat text; it does not apply the change to the editor.
+- Clearing a conversation disconnects its local session mapping but leaves the old session stored on the TrueForge server.

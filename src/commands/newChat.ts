@@ -1,4 +1,4 @@
-import { MessageService } from "../services/MessageService";
+import { MessageService } from "../services/MessageService.js";
 
 /**
  * Triggers a new conversation — clears history and generates a new ID.
