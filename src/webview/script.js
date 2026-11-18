@@ -229,14 +229,22 @@
 
     switch (msg.type) {
       case 'MESSAGE_RECEIVED': {
-        const { role, content, messageId } = msg.payload;
-        if (role === 'user' || role === 'assistant') {
-          appendMessage(role, content, messageId);
+        if (msg.payload && typeof msg.payload === 'object') {
+          const { role, content, messageId } = msg.payload;
+          if (
+            (role === 'user' || role === 'assistant') &&
+            typeof content === 'string' &&
+            typeof messageId === 'string'
+          ) {
+            appendMessage(role, content, messageId);
+          }
         }
         break;
       }
       case 'MESSAGE_DELTA': {
-        const bubble = messagesById.get(msg.payload.messageId);
+        const bubble = msg.payload && typeof msg.payload === 'object'
+          ? messagesById.get(msg.payload.messageId)
+          : undefined;
         if (bubble && typeof msg.payload.delta === 'string') {
           bubble.textContent += msg.payload.delta;
           scrollToBottom();
@@ -271,10 +279,32 @@
         if (typeof msg.payload.newConversationId === 'string') {
           conversationId = msg.payload.newConversationId;
         }
-        showEmptyState();
+        if (typeof msg.payload.mode === 'string') {
+          agentMode = msg.payload.mode === 'agent';
+          agentToggle.checked = agentMode;
+          modeLabel.textContent = 'Mode: ' + (agentMode ? 'Agent' : 'Chat');
+          document.body.classList.toggle('fp-agent-mode', agentMode);
+        }
+        if (Array.isArray(msg.payload.messages) && msg.payload.messages.length > 0) {
+          msg.payload.messages.forEach((message) => {
+            if (
+              message &&
+              (message.role === 'user' || message.role === 'assistant') &&
+              typeof message.content === 'string' &&
+              typeof message.id === 'string'
+            ) {
+              appendMessage(message.role, message.content, message.id);
+            }
+          });
+        } else {
+          showEmptyState();
+        }
         isWorking = false;
         btnCancel.hidden = true;
         updateSendButton();
+        if (typeof msg.payload.status === 'string') {
+          applyStatus(msg.payload.status);
+        }
         break;
       }
     }

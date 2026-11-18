@@ -102,6 +102,9 @@ export type ExtensionMessage =
       type: "CHAT_CLEARED";
       payload: {
         newConversationId: string;
+        messages: ChatMessage[];
+        mode: ChatMode;
+        status: ConnectionStatus;
       };
     }
   | {

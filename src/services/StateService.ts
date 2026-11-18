@@ -13,8 +13,11 @@ export class StateService {
   private _messages: ChatMessage[] = [];
 
   constructor(private readonly storage?: vscode.Memento) {
+    const storedConversationId = storage?.get<unknown>(CONVERSATION_ID_KEY);
     this._conversationId =
-      storage?.get<string>(CONVERSATION_ID_KEY) ?? this._generateId();
+      typeof storedConversationId === "string" && storedConversationId.length > 0
+        ? storedConversationId
+        : this._generateId();
     this._persistConversationId();
   }
 

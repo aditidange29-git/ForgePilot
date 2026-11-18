@@ -22,6 +22,7 @@ test("Inline Edit includes only its explicit code context", () => {
 
   assert.match(prompt, /Instruction:\nAdd input validation/);
   assert.match(prompt, /```typescript\nfunction save\(\) \{\}\n```/);
+  assert.match(prompt, /Do not claim that the edit was applied/);
 });
 
 test("Agent Mode asks for structured recommendations without claiming tools", () => {

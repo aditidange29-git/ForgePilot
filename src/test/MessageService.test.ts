@@ -326,3 +326,30 @@ test("surfaces request failures to the Webview", async () => {
     )
   );
 });
+
+test("restores conversation state when the Webview becomes ready again", async () => {
+  const context = createContext();
+
+  context.service.handleMessage({
+    type: "SEND_MESSAGE",
+    payload: {
+      message: "remember this",
+      conversationId: context.conversationId,
+      mode: "agent",
+    },
+  });
+  await waitFor(context, () => context.prompts.length === 1);
+
+  context.service.handleMessage({ type: "WEBVIEW_READY" });
+  const restored = context.posted
+    .filter((message) => message.type === "CHAT_CLEARED")
+    .at(-1);
+
+  assert.equal(restored?.payload?.mode, "agent");
+  assert.equal(
+    (restored?.payload?.messages as Array<{ content: string }> | undefined)?.some(
+      (message) => message.content === "remember this"
+    ),
+    true
+  );
+});

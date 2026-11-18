@@ -36,7 +36,7 @@ export function buildInlineEditPrompt(
   languageId: string
 ): string {
   return (
-    "Apply this requested edit to the selected code. Explain the change and provide the complete revised code.\n\n" +
+    "Produce a proposed edit for the selected code. Do not claim that the edit was applied. Explain the change and provide the complete revised code.\n\n" +
     `Instruction:\n${instruction.trim()}\n\nSelected code:\n\`\`\`${languageId}\n${selectedCode}\n\`\`\``
   );
 }

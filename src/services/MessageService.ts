@@ -39,7 +39,7 @@ export class MessageService {
 
   handleMessage(raw: unknown): void {
     if (!this._isValidMessage(raw)) {
-      console.warn("[ForgePilot] Received invalid message payload:", raw);
+      console.warn("[ForgePilot] Received invalid Webview message.");
       return;
     }
 
@@ -307,9 +307,23 @@ export class MessageService {
   }
 
   private _syncConversation(conversationId = this.state.conversationId): void {
+    let status: ConnectionStatus;
+    if (this.connectionService.isConnected) {
+      status = this.state.status === "error" ? "error" : "ready";
+    } else {
+      status =
+        this.state.status === "error" || this.state.status === "connecting"
+          ? this.state.status
+          : "not-connected";
+    }
     this.sendToWebview({
       type: "CHAT_CLEARED",
-      payload: { newConversationId: conversationId },
+      payload: {
+        newConversationId: conversationId,
+        messages: this.state.messages,
+        mode: this.state.mode,
+        status,
+      },
     });
   }
 
