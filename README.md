@@ -4,7 +4,28 @@
 
 ForgePilot is a VS Code-native AI coding assistant connected to the official TrueForge agent runtime SDK. TrueForge runs the agent loop, manages sessions, and streams turn events; ForgePilot does not implement a separate agent loop.
 
-## Requirements
+# 7. Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| TypeScript | Extension application logic |
+| JavaScript | Webview interaction logic |
+| HTML | Webview structure |
+| CSS | Interface styling |
+| Node.js | Extension development runtime |
+| npm | Dependency management |
+| Visual Studio Code API | Extension integration |
+| TrueForge SDK | AI agent runtime integration |
+| Node.js Test Runner | Automated unit testing |
+| Git and GitHub | Version control and collaboration |
+
+### Key Dependency
+
+```json
+{
+  "@truefoundry/trueforge-sdk": "0.185.0"
+}
+```
 
 | Tool | Minimum version |
 |------|----------------|
@@ -17,9 +38,18 @@ ForgePilot is a VS Code-native AI coding assistant connected to the official Tru
 ## Setup
 
 ```bash
-git clone https://github.com/aditidange29-git/ForgePilot
 cd ForgePilot
-npm install
+```
+
+## Step 3: Install Dependencies
+
+```bash
+npm ci
+```
+
+## Step 4: Compile TypeScript
+
+```bash
 npm run compile
 ```
 
@@ -44,7 +74,25 @@ npm run compile
 - Ordinary chat never includes the current editor selection. **Inline Edit** sends only the selected code and its instruction as prompt context; it returns a proposed edit and does not change workspace files.
 - **Clear Chat** and **New Chat** both create and synchronize a fresh ForgePilot conversation ID, remove its old local session mapping, and create a fresh TrueForge session on the next message. The old server-side session is not deleted.
 
-## Commands
+# 11. Running ForgePilot
+
+## Method 1: Run and Debug
+
+1. Open the ForgePilot project folder in VS Code.
+2. Open the Run and Debug panel.
+3. Select `Run ForgePilot Extension`.
+4. Press `F5`.
+5. Wait for the Extension Development Host window.
+6. Locate ForgePilot in the Activity Bar.
+7. Open the sidebar.
+
+The project includes a development launch configuration in:
+
+```text
+.vscode/launch.json
+```
+
+## Method 2: Command Line
 
 | Command | Action |
 |---------|--------|
@@ -57,6 +105,13 @@ npm run compile
 
 ## Project structure
 
+```json
+{
+  "type": "SEND_MESSAGE",
+  "message": "Explain this function",
+  "conversationId": "conversation-id",
+  "mode": "chat"
+}
 ```
 src/
 ├── extension.ts
