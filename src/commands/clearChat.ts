@@ -1,7 +1,7 @@
-import { MessageService } from "../services/MessageService";
+import { MessageService } from "../services/MessageService.js";
 
 /**
- * Clears the current conversation messages without changing the conversation ID.
+ * Clears the current conversation and starts a fresh TrueForge session on demand.
  */
 export function clearChat(messageService: MessageService): void {
   messageService.handleMessage({ type: "CLEAR_CHAT" });

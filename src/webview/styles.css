@@ -233,6 +233,7 @@ body {
   align-items: flex-end;
   gap: 6px;
 }
+.fp-btn[hidden] { display: none; }
 
 .fp-composer__textarea {
   flex: 1;

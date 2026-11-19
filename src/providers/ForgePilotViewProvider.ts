@@ -1,23 +1,19 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { MessageService } from "../services/MessageService";
-import { StateService } from "../services/StateService";
+import { MessageService } from "../services/MessageService.js";
 
 export class ForgePilotViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "forgepilot.view";
 
   private _view?: vscode.WebviewView;
   private readonly _messageService: MessageService;
-  private readonly _stateService: StateService;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    messageService: MessageService,
-    stateService: StateService
+    messageService: MessageService
   ) {
     this._messageService = messageService;
-    this._stateService = stateService;
   }
 
   public resolveWebviewView(
@@ -44,16 +40,11 @@ export class ForgePilotViewProvider implements vscode.WebviewViewProvider {
       }
     );
 
-    // Send initial status once webview is ready
-    webviewView.webview.onDidReceiveMessage((message: unknown) => {
-      const msg = message as { type?: string };
-      if (msg?.type === "WEBVIEW_READY") {
-        this._messageService.sendStatus(this._stateService.status);
-      }
-    });
-
     webviewView.onDidDispose(() => {
       msgDisposable.dispose();
+      if (this._view === webviewView) {
+        this._view = undefined;
+      }
     });
   }
 

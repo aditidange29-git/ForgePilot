@@ -3,4 +3,8 @@ out/
 .vscode-test/
 *.vsix
 .env
+.env.local
+.env.*.local
+gemini-api-key.txt
+*-key.txt
 *.log
