@@ -1,122 +1,86 @@
 # ForgePilot — AI Engineering Teammate
 
-> Phase 2: TrueForge Agent Runtime Integration
+A VS Code extension that brings an AI coding assistant into the editor, built on the TrueForge agent runtime by TrueFoundry.
 
-ForgePilot is a VS Code-native AI coding assistant connected to the official TrueForge agent runtime SDK. TrueForge runs the agent loop, manages sessions, and streams turn events; ForgePilot does not implement a separate agent loop.
+![ForgePilot demo](docs/demo.gif)
 
-# 7. Technology Stack
+## Problem
+
+Developers often leave their editor to get AI help, then copy answers back by hand. ForgePilot is a VS Code extension that brings an AI engineering teammate into the editor, built on the TrueForge agent runtime. It streams answers, proposes edits for selected code, and keeps the developer in control of what gets sent and what gets changed.
+
+## What it does
+
+- **Chat Mode:** ask questions about your code and get streamed answers.
+- **Agent Mode:** structured engineering analysis and recommendations.
+- **Inline Edit:** select code, give an instruction, and get a proposed edit.
+- **Stop, New Chat and Clear Chat** for full control of each conversation.
+- [Add your approval-gated feature here once it works]
+
+## How it uses TrueForge
+
+TrueForge runs the agent loop, manages sessions, and streams turn events. ForgePilot does not implement its own agent loop. It connects through the TrueForge SDK (`@truefoundry/trueforge-sdk@0.185.0`) and shows **Ready** only after the server's capabilities endpoint responds.
+
+## Technology stack
 
 | Technology | Purpose |
 |---|---|
-| TypeScript | Extension application logic |
-| JavaScript | Webview interaction logic |
-| HTML | Webview structure |
-| CSS | Interface styling |
-| Node.js | Extension development runtime |
-| npm | Dependency management |
-| Visual Studio Code API | Extension integration |
-| TrueForge SDK | AI agent runtime integration |
-| Node.js Test Runner | Automated unit testing |
-| Git and GitHub | Version control and collaboration |
+| TypeScript | Extension logic |
+| JavaScript, HTML, CSS | Webview UI |
+| VS Code API | Editor integration |
+| TrueForge SDK | Agent runtime |
+| Node.js test runner | Unit tests |
 
-### Key Dependency
+## Quick start
 
-```json
-{
-  "@truefoundry/trueforge-sdk": "0.185.0"
-}
-```
-
-| Tool | Minimum version |
-|------|----------------|
-| Node.js (TrueForge server and development) | 22.14 or later |
-| TrueForge server Node.js | 22.14 or later |
-| npm | 9.x or later |
-| VS Code | 1.100.0 or later |
-| Git | any recent |
-
-## Setup
+**Requirements:** Node.js 22.14+, npm 9+, VS Code 1.100.0+, Git
 
 ```bash
+git clone https://github.com/aditidange29-git/ForgePilot.git
 cd ForgePilot
-```
-
-## Step 3: Install Dependencies
-
-```bash
 npm ci
-```
-
-## Step 4: Compile TypeScript
-
-```bash
 npm run compile
 ```
 
-## Run in VS Code (F5)
+1. Start the TrueForge server: `npx @truefoundry/trueforge@latest` (default `http://localhost:8790`).
+2. Configure at least one model in the TrueForge server. Provider API keys go on the server, never in this repo.
+3. Open the folder in VS Code, press **F5**, and choose **Run ForgePilot Extension**.
+4. In the new window, click the ForgePilot icon, or run **ForgePilot: Connect to TrueForge**.
 
-1. Open the `ForgePilot` folder in VS Code.
-2. Press **F5** and select **VS Code Extension Development Host**.
-3. Click the ForgePilot icon in the Activity Bar.
+If the server is not at the default address, set `forgepilot.trueforge.baseUrl` in VS Code settings. If authentication is enabled, run **ForgePilot: Set TrueForge Access Token**.
 
-## TrueForge connection
-
-1. Start TrueForge locally with `npx @truefoundry/trueforge@latest`. The default address is `http://localhost:8790`.
-2. Configure at least one model in the TrueForge server. ForgePilot selects from the models returned by the server; it does not assume a model name.
-3. Set `forgepilot.trueforge.baseUrl` in VS Code settings if the server is not using the default address.
-4. Run **ForgePilot: Connect to TrueForge**, or open the ForgePilot view. ForgePilot shows Ready only after the SDK successfully calls the server capabilities endpoint.
-5. If authentication is enabled, run **ForgePilot: Set TrueForge Access Token**. The token is stored in VS Code SecretStorage and is never sent to the Webview. Use **ForgePilot: Clear TrueForge Access Token** to remove it.
-
-## Chat modes and privacy
-
-- **Chat Mode** sends only the typed prompt and asks TrueForge for a direct answer.
-- **Agent Mode** sends a different system instruction asking for structured engineering analysis and actionable recommendations. This integration does not grant workspace editing or command execution, and the agent is instructed not to claim it performed either.
-- Ordinary chat never includes the current editor selection. **Inline Edit** sends only the selected code and its instruction as prompt context; it returns a proposed edit and does not change workspace files.
-- **Clear Chat** and **New Chat** both create and synchronize a fresh ForgePilot conversation ID, remove its old local session mapping, and create a fresh TrueForge session on the next message. The old server-side session is not deleted.
-
-# 11. Running ForgePilot
-
-## Method 1: Run and Debug
-
-1. Open the ForgePilot project folder in VS Code.
-2. Open the Run and Debug panel.
-3. Select `Run ForgePilot Extension`.
-4. Press `F5`.
-5. Wait for the Extension Development Host window.
-6. Locate ForgePilot in the Activity Bar.
-7. Open the sidebar.
-
-The project includes a development launch configuration in:
-
-```text
-.vscode/launch.json
-```
-
-## Method 2: Command Line
+## Commands
 
 | Command | Action |
-|---------|--------|
-| `ForgePilot: Open` | Opens the sidebar |
-| `ForgePilot: New Chat` | Starts a new conversation and TrueForge session |
-| `ForgePilot: Clear Chat` | Starts a fresh conversation and TrueForge session |
-| `ForgePilot: Connect to TrueForge` | Checks or re-establishes the server connection |
-| `ForgePilot: Set TrueForge Access Token` | Securely stores an optional server token |
-| `ForgePilot: Clear TrueForge Access Token` | Removes the stored token |
+|---|---|
+| ForgePilot: Open | Opens the sidebar |
+| ForgePilot: New Chat | Starts a new conversation and session |
+| ForgePilot: Clear Chat | Starts a fresh conversation and session |
+| ForgePilot: Connect to TrueForge | Checks or re-establishes the connection |
+| ForgePilot: Set TrueForge Access Token | Stores an optional token in SecretStorage |
+| ForgePilot: Clear TrueForge Access Token | Removes the stored token |
+
+## Privacy
+
+- Ordinary chat sends only the typed prompt.
+- Inline Edit sends only the selected code and your instruction.
+- Access tokens are stored in VS Code SecretStorage and never sent to the webview.
+
+## Runtime and sessions
+
+- The TrueForge SDK is pinned to `0.185.0` and requires Node.js 22 or later. The extension is built as ESM to load the SDK.
+- Each workspace conversation reuses its TrueForge session between turns. Session and conversation IDs persist in VS Code workspace state.
+- Assistant text streams through the SDK using Server-Sent Events.
+- Stop aborts the active request and asks TrueForge to cancel the running turn.
+- Model provider API keys belong on the TrueForge server, never in ForgePilot settings, the webview, or this repo.
 
 ## Project structure
 
-```json
-{
-  "type": "SEND_MESSAGE",
-  "message": "Explain this function",
-  "conversationId": "conversation-id",
-  "mode": "chat"
-}
 ```
 src/
 ├── extension.ts
 ├── commands/
-├── providers/ForgePilotViewProvider.ts
+├── providers/
+│   └── ForgePilotViewProvider.ts
 ├── services/
 │   ├── StateService.ts
 │   ├── MessageService.ts
@@ -129,22 +93,34 @@ src/
 ├── types/
 │   ├── messages.ts
 │   └── trueforge.ts
+├── test/
 └── webview/
     ├── index.html
     ├── styles.css
     └── script.js
 ```
 
-## Runtime and sessions
+## Testing
 
-- The TrueForge SDK dependency is pinned to `0.185.0`; its package requires Node.js 22 or later. The extension is emitted as ESM to load the SDK's supported ESM entry point.
-- `engines.vscode` remains `^1.100.0` and `@types/vscode` is pinned to `1.100.0`. VS Code controls the extension-host Node.js version, so compatibility of every VS Code build at that minimum with the SDK's Node.js floor has not been verified.
-- Each workspace conversation reuses its TrueForge session for later turns. Session IDs and the current conversation ID are persisted through VS Code workspace state.
-- Assistant text streams through SDK `0.185.0` Server-Sent Events, using event metadata and event-delta helpers. Stop aborts the active SDK request and asks TrueForge to cancel the running turn.
-- Model-provider API keys belong in the TrueForge server, not ForgePilot settings, the Webview, or the repository.
+```bash
+npm test
+```
 
 ## Known limitations
 
-- Agent Mode provides structured planning and recommendations only; workspace file edits and command execution are not implemented.
-- Inline Edit returns a proposed change as chat text; it does not apply the change to the editor.
-- Clearing a conversation disconnects its local session mapping but leaves the old session stored on the TrueForge server.
+- Agent Mode gives recommendations only. It does not edit files or run commands yet.
+- Inline Edit returns a proposed change as chat text and does not apply it.
+- Clearing a chat does not delete the old session on the TrueForge server.
+
+## Roadmap
+
+- [ ] Approval checkpoint with diff view before applying edits
+- [ ] Run tests in the TrueForge sandbox and show results in the sidebar
+
+## AI tools used while building
+
+[ Claude, Gemini, Github copilot]
+
+## License
+
+MIT
