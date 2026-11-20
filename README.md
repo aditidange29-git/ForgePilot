@@ -119,7 +119,7 @@ npm test
 
 ## AI tools used while building
 
-[ Claude, Gemini, Github copilot]
+[ Claude, kiro, Chatgpt , antigravity]
 
 ## License
 
