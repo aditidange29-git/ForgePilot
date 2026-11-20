@@ -329,3 +329,132 @@ body.fp-agent-mode #mode-label  { color: #9cdcfe; }
 /* ── Footer labels ─────────────────────────────────────────────────────── */
 .fp-footer-label { font-size: 10px; color: var(--fp-fg-muted); }
 .fp-footer-label--muted { opacity: 0.7; }
+
+/* ── Markdown rendering ────────────────────────────────────────────────── */
+
+/* Remove pre-wrap from assistant bubbles so markdown renders properly */
+.fp-message--assistant .fp-message__bubble {
+  white-space: normal;
+}
+
+/* Headings */
+.fp-message__bubble h1,
+.fp-message__bubble h2,
+.fp-message__bubble h3,
+.fp-message__bubble h4,
+.fp-message__bubble h5,
+.fp-message__bubble h6 {
+  font-weight: 600;
+  margin: 10px 0 4px;
+  line-height: 1.3;
+  color: var(--vscode-foreground, #cccccc);
+}
+.fp-message__bubble h1 { font-size: 1.15em; }
+.fp-message__bubble h2 { font-size: 1.08em; }
+.fp-message__bubble h3,
+.fp-message__bubble h4,
+.fp-message__bubble h5,
+.fp-message__bubble h6 { font-size: 1em; }
+
+/* Paragraphs */
+.fp-message__bubble p { margin: 6px 0; }
+.fp-message__bubble p:first-child { margin-top: 0; }
+.fp-message__bubble p:last-child  { margin-bottom: 0; }
+
+/* Lists */
+.fp-message__bubble ul,
+.fp-message__bubble ol {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+.fp-message__bubble li { margin: 2px 0; }
+
+/* Horizontal rule */
+.fp-message__bubble hr {
+  border: none;
+  border-top: 1px solid var(--vscode-panel-border, #3c3c3c);
+  margin: 10px 0;
+}
+
+/* Inline code */
+.fp-message__bubble code {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 0.9em;
+  background: var(--vscode-textCodeBlock-background, #1e1e1e);
+  border: 1px solid var(--vscode-panel-border, #3c3c3c);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+/* Code blocks */
+.fp-message__bubble pre {
+  position: relative;
+  background: var(--vscode-textCodeBlock-background, #1e1e1e);
+  border: 1px solid var(--vscode-panel-border, #3c3c3c);
+  border-radius: var(--fp-radius);
+  padding: 10px 36px 10px 10px;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 0.88em;
+  line-height: 1.5;
+  white-space: pre;
+}
+.fp-message__bubble pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Tables */
+.fp-message__bubble table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  font-size: 0.9em;
+}
+.fp-message__bubble th,
+.fp-message__bubble td {
+  border: 1px solid var(--vscode-panel-border, #3c3c3c);
+  padding: 5px 10px;
+  text-align: left;
+}
+.fp-message__bubble th {
+  background: var(--vscode-editor-background, #252526);
+  font-weight: 600;
+}
+
+/* Blockquotes */
+.fp-message__bubble blockquote {
+  margin: 6px 0;
+  padding: 4px 10px;
+  border-left: 3px solid var(--vscode-button-background, #0e639c);
+  color: var(--vscode-descriptionForeground, #858585);
+  background: var(--vscode-editor-background, #252526);
+}
+.fp-message__bubble blockquote p { margin: 0; }
+
+/* Strong / em */
+.fp-message__bubble strong { font-weight: 600; }
+.fp-message__bubble em     { font-style: italic; }
+
+/* Copy button on code blocks */
+.copy-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-family: var(--vscode-font-family, 'Segoe UI', system-ui, sans-serif);
+  background: var(--vscode-editor-background, #252526);
+  color: var(--vscode-descriptionForeground, #858585);
+  border: 1px solid var(--vscode-panel-border, #3c3c3c);
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  line-height: 1.4;
+}
+.fp-message__bubble pre:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { background: var(--vscode-button-background, #0e639c); color: var(--vscode-button-foreground, #fff); }

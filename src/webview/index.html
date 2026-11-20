@@ -7,7 +7,7 @@
     http-equiv="Content-Security-Policy"
     content="default-src 'none';
              style-src {{CSP_SOURCE}} 'nonce-{{NONCE}}';
-             script-src 'nonce-{{NONCE}}';"
+             script-src {{CSP_SOURCE}} 'nonce-{{NONCE}}';"
   />
   <link rel="stylesheet" href="{{STYLES_URI}}" nonce="{{NONCE}}" />
   <title>ForgePilot</title>
@@ -96,6 +96,8 @@
     </div>
   </footer>
 
+  <script nonce="{{NONCE}}" src="{{MARKED_URI}}"></script>
+  <script nonce="{{NONCE}}" src="{{DOMPURIFY_URI}}"></script>
   <script nonce="{{NONCE}}" src="{{SCRIPT_URI}}"></script>
 </body>
 </html>

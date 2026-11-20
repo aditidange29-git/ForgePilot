@@ -25,7 +25,10 @@ export class ForgePilotViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this._extensionUri],
+      localResourceRoots: [
+        this._extensionUri,
+        vscode.Uri.joinPath(this._extensionUri, "media", "vendor"),
+      ],
     };
 
     webviewView.webview.html = this._getHtmlContent(webviewView.webview);
@@ -68,6 +71,14 @@ export class ForgePilotViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, "src", "webview", "script.js")
     );
 
+    const markedUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "vendor", "marked.umd.js")
+    );
+
+    const dompurifyUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "vendor", "purify.min.js")
+    );
+
     // Nonce for CSP
     const nonce = this._getNonce();
 
@@ -75,6 +86,8 @@ export class ForgePilotViewProvider implements vscode.WebviewViewProvider {
     html = html
       .replace(/\{\{STYLES_URI\}\}/g, stylesUri.toString())
       .replace(/\{\{SCRIPT_URI\}\}/g, scriptUri.toString())
+      .replace(/\{\{MARKED_URI\}\}/g, markedUri.toString())
+      .replace(/\{\{DOMPURIFY_URI\}\}/g, dompurifyUri.toString())
       .replace(/\{\{NONCE\}\}/g, nonce)
       .replace(/\{\{CSP_SOURCE\}\}/g, webview.cspSource);
 
