@@ -4,6 +4,7 @@
   "displayName": "ForgePilot",
   "description": "ForgePilot - AI Engineering Teammate for VS Code",
   "version": "0.1.0",
+  "license": "MIT",
   "engines": {
     "node": ">=22.14.0",
     "vscode": "^1.100.0"
