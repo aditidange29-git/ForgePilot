@@ -58,6 +58,16 @@ export type WebviewMessage =
   | {
       /** Webview requests the current VS Code editor selection */
       type: "INLINE_CONTEXT_REQUEST";
+    }
+  | {
+      /**
+       * Clipboard fallback: webview asks the extension host to write text
+       * to the clipboard using vscode.env.clipboard (available in Phase 2).
+       */
+      type: "COPY_TEXT";
+      payload: {
+        text: string;
+      };
     };
 
 // ---------------------------------------------------------------------------

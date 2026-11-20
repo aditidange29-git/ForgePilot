@@ -67,6 +67,14 @@ export class MessageService {
       case "AGENT_MODE_CHANGED":
         this.state.setMode(raw.payload.enabled ? "agent" : "chat");
         break;
+      case "COPY_TEXT":
+        // Clipboard fallback: navigator.clipboard unavailable in the webview.
+        // Dynamic import keeps vscode out of the static module graph so unit
+        // tests (which run outside VS Code) are not affected.
+        import("vscode").then((vs) => {
+          vs.env.clipboard.writeText(raw.payload.text);
+        }).catch(() => { /* not in VS Code — ignore */ });
+        break;
     }
   }
 
@@ -390,6 +398,10 @@ export class MessageService {
       case "AGENT_MODE_CHANGED": {
         const payload = message.payload as Record<string, unknown> | undefined;
         return typeof payload?.enabled === "boolean";
+      }
+      case "COPY_TEXT": {
+        const payload = message.payload as Record<string, unknown> | undefined;
+        return typeof payload?.text === "string";
       }
       default:
         return false;

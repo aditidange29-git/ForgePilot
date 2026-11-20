@@ -29,7 +29,78 @@
   const btnInlineSubmit = /** @type {HTMLButtonElement} */ (document.getElementById('btn-inline-submit'));
   const inlineInstruction=/** @type {HTMLTextAreaElement} */(document.getElementById('inline-instruction'));
   const inlineCodePreview=/** @type {HTMLElement} */(document.getElementById('inline-code-preview'));
+
+  /** @type {Map<string, {bubble: HTMLElement, accumulated: string, rafId: number|null}>} */
   const messagesById = new Map();
+
+  // ── Markdown rendering ────────────────────────────────────────────────────
+
+  /**
+   * Render markdown text into a bubble element.
+   * Falls back to textContent if marked/DOMPurify are unavailable or throw.
+   * @param {HTMLElement} bubble
+   * @param {string} text
+   */
+  function renderMarkdown(bubble, text) {
+    try {
+      // @ts-ignore — marked and DOMPurify loaded via vendor scripts
+      if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+        // @ts-ignore
+        const rawHtml = marked.parse(text);
+        // @ts-ignore
+        bubble.innerHTML = DOMPurify.sanitize(rawHtml);
+        attachCopyButtons(bubble);
+        return;
+      }
+    } catch (_) {
+      // fall through to textContent
+    }
+    bubble.textContent = text;
+  }
+
+  /**
+   * Add a Copy button to every <pre> inside the given element.
+   * @param {HTMLElement} container
+   */
+  function attachCopyButtons(container) {
+    container.querySelectorAll('pre').forEach((pre) => {
+      // Don't add a second button on re-render
+      if (pre.querySelector('.copy-btn')) { return; }
+      const btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.textContent = 'Copy';
+      btn.setAttribute('aria-label', 'Copy code');
+      btn.addEventListener('click', () => {
+        const code = pre.querySelector('code');
+        const text = code ? code.textContent || '' : pre.textContent || '';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => flashCopied(btn), () => copyFallback(btn, text));
+        } else {
+          copyFallback(btn, text);
+        }
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
+  }
+
+  /**
+   * @param {HTMLButtonElement} btn
+   */
+  function flashCopied(btn) {
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+  }
+
+  /**
+   * Clipboard fallback: post message to extension host.
+   * @param {HTMLButtonElement} btn
+   * @param {string} text
+   */
+  function copyFallback(btn, text) {
+    vscode.postMessage({ type: 'COPY_TEXT', payload: { text } });
+    flashCopied(btn);
+  }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -62,12 +133,19 @@
 
     const bubble = document.createElement('div');
     bubble.className = 'fp-message__bubble';
-    bubble.textContent = content;
+
+    if (role === 'assistant') {
+      renderMarkdown(bubble, content);
+    } else {
+      bubble.textContent = content;
+    }
 
     article.appendChild(roleEl);
     article.appendChild(bubble);
     conversation.appendChild(article);
-    if (id) { messagesById.set(id, bubble); }
+    if (id) {
+      messagesById.set(id, { bubble, accumulated: content, rafId: null });
+    }
     scrollToBottom();
   }
 
@@ -242,12 +320,18 @@
         break;
       }
       case 'MESSAGE_DELTA': {
-        const bubble = msg.payload && typeof msg.payload === 'object'
+        const entry = msg.payload && typeof msg.payload === 'object'
           ? messagesById.get(msg.payload.messageId)
           : undefined;
-        if (bubble && typeof msg.payload.delta === 'string') {
-          bubble.textContent += msg.payload.delta;
-          scrollToBottom();
+        if (entry && typeof msg.payload.delta === 'string') {
+          entry.accumulated += msg.payload.delta;
+          if (entry.rafId === null) {
+            entry.rafId = requestAnimationFrame(() => {
+              entry.rafId = null;
+              renderMarkdown(entry.bubble, entry.accumulated);
+              scrollToBottom();
+            });
+          }
         }
         break;
       }
